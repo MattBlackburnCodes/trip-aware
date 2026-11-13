@@ -4,6 +4,7 @@ import { ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, Clock3, Compass
 import { WorldMap } from './WorldMap'
 import { date, empty, flag, levels, levelText, observedDate, observedTime, sourceName, sourceUrl, type Advisory, type Change, type Level, type Snapshot } from './types'
 
+const blackburnWorksUrl = 'https://blackburn.works'
 const regions = ['Africa', 'Asia', 'Europe', 'North America', 'Oceania', 'South America']
 const labels = ['Normal precautions', 'Increased caution', 'Reconsider travel', 'Do not travel']
 
@@ -44,7 +45,7 @@ function Footer() {
     <div><Logo/><p>Official travel advisory information for U.S. travelers.</p></div>
     <div className="footer-links"><Link to="/map">World map</Link><Link to="/destinations">Destinations</Link><Link to="/advisories">Advisory changes</Link><Link to="/about">About TripAware</Link></div>
     <a href={sourceUrl}>Travel.State.Gov <ArrowUpRight size={16}/></a>
-  </div><div className="shell footer-bottom">TripAware is an independent product of Blackburn Works LLC. Advisory data comes from the U.S. Department of State RSS feed.</div></footer>
+  </div><div className="shell footer-bottom">TripAware is an independent product of <a href={blackburnWorksUrl}>Blackburn Works LLC</a>. Advisory data comes from the U.S. Department of State RSS feed.</div></footer>
 }
 
 function Freshness({ data, failed }: { data: Snapshot; failed: boolean }) {
@@ -248,7 +249,7 @@ export function App({ initial = empty, live = true }: { initial?: Snapshot; live
       <Route path="/destinations/:slug" element={<Country data={data} loading={loading}/>}/>
       <Route path="/map" element={<section className="shell page"><div className="page-intro"><MapIcon size={26}/><h1>World advisory map</h1><p>Select a country to open its advisory. Zoom in to pan the map.</p></div><WorldMap advisories={data.advisories}/></section>}/>
       <Route path="/advisories" element={<section className="shell page"><div className="page-intro"><ArrowDownRight size={26}/><h1>Advisory changes</h1><p>Changes TripAware observed in the official feed, with government publication dates shown separately.</p></div><Changes changes={data.changes} rows={data.advisories}/><LevelGuide/></section>}/>
-      <Route path="/about" element={<section className="shell page"><div className="page-intro"><Compass size={26}/><h1>About TripAware</h1><p>Know Before You Go. A Blackburn Works Product.</p></div><div className="prose-card"><h2>Official sources</h2><p>TripAware is an independent public resource from Blackburn Works LLC. We track travel advisories from the U.S. Department of State’s RSS feed. The agency’s website may have newer levels, additional warnings, or more detailed guidance.</p><ul><li><a href={sourceUrl}>U.S. Department of State travel advisories</a></li><li><a href="https://travel.state.gov/_res/rss/TAsTWs.xml">Official advisory RSS feed</a></li><li><a href="https://ivvcadatacatalog.state.gov/Datasets">Consular Affairs Data Catalog</a></li></ul><h2>How updates work</h2><p>TripAware records when it retrieves a valid feed and tracks changes to levels or advisory text. Publication dates come from the agency. Verification dates show when TripAware checked the feed. During an outage, the most recent available snapshot remains visible with its verification date.</p><h2>Travel planning</h2><p>Travel advisory levels are not guarantees of personal safety. Always review the latest State Department guidance, including regional warnings, before you travel.</p></div></section>}/>
+      <Route path="/about" element={<section className="shell page"><div className="page-intro"><Compass size={26}/><h1>About TripAware</h1><p>Know Before You Go. A Blackburn Works Product.</p></div><div className="prose-card"><h2>Official sources</h2><p>TripAware is an independent public resource from <a href={blackburnWorksUrl}>Blackburn Works LLC</a>. We track travel advisories from the U.S. Department of State’s RSS feed. The agency’s website may have newer levels, additional warnings, or more detailed guidance.</p><ul><li><a href={sourceUrl}>U.S. Department of State travel advisories</a></li><li><a href="https://travel.state.gov/_res/rss/TAsTWs.xml">Official advisory RSS feed</a></li><li><a href="https://ivvcadatacatalog.state.gov/Datasets">Consular Affairs Data Catalog</a></li></ul><h2>How updates work</h2><p>TripAware records when it retrieves a valid feed and tracks changes to levels or advisory text. Publication dates come from the agency. Verification dates show when TripAware checked the feed. During an outage, the most recent available snapshot remains visible with its verification date.</p><h2>Travel planning</h2><p>Travel advisory levels are not guarantees of personal safety. Always review the latest State Department guidance, including regional warnings, before you travel.</p></div></section>}/>
       <Route path="*" element={<Missing/>}/>
     </Routes>
   </main><Footer/></>
