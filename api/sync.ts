@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { contentHash, downloadFeed } from '../server/feed'
-import { database } from '../server/database'
+import { contentHash, downloadFeed } from '../server/feed.js'
+import { database } from '../server/database.js'
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   res.setHeader('Cache-Control', 'no-store')

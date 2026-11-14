@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { load } from 'cheerio'
 import countries from 'i18n-iso-countries'
 import world from 'world-countries'
-import { type Advisory, type Level, sourceUrl } from '../src/types'
+import { type Advisory, type Level, sourceUrl } from '../src/types.js'
 
 export const feedUrl = 'https://travel.state.gov/_res/rss/TAsTWs.xml'
 const clean = (text: string) => text.replace(/\s+/g, ' ').trim()
