@@ -39,5 +39,7 @@ The sync fetches the official feed with a timeout and backoff. It validates item
 - RSS does not supply reliable structured risk categories, separate country safety profiles, or emergency contacts. The country pages display the original description as plain text, show matching warning excerpts when available, and link to the official page for additional guidance. Missing fields remain empty. History starts at the first successful synchronization and records content or level changes observed after that baseline.
 - Map shapes come from [World Atlas](https://github.com/topojson/world-atlas) (ISC), derived from public-domain Natural Earth data. D3 Geo projects those shapes. Validated ISO numeric codes join shapes to advisories. Smaller territories and destinations with non-ISO identifiers remain accessible in the list even when they have no matching polygon.
 
+Nearby destinations use country centers and land borders from [mledoze/countries](https://github.com/mledoze/countries), licensed under [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/). The checked-in geography file contains only the ISO codes, coordinates, and borders used for ranking.
+
 The app marks snapshots older than 36 hours, failed syncs, and API fallback states. Verification dates describe when TripAware checked the feed. Official issue dates come from the State Department.
 

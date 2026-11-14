@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useNavigationType, useParams, useSearchParams } from 'react-router'
 import { ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, Clock3, Compass, Globe2, Map as MapIcon, MapPin, Menu, Moon, Search, ShieldCheck, Sun, TriangleAlert, X } from 'lucide-react'
 import { WorldMap } from './WorldMap'
+import { relatedDestinations } from './relatedDestinations'
 import { date, empty, flag, levels, levelText, observedDate, observedTime, sourceName, sourceUrl, type Advisory, type Change, type Level, type Snapshot } from './types'
 
 const blackburnWorksUrl = 'https://blackburn.works'
 const regions = ['Africa', 'Asia', 'Europe', 'North America', 'Oceania', 'South America']
 const labels = ['Normal precautions', 'Increased caution', 'Reconsider travel', 'Do not travel']
+const travelGuidance = 'TripAware displays U.S. Department of State advisories for U.S. travelers. Follow your own government’s travel guidance and, if applicable, your employer’s travel policies. Advisory levels are not guarantees of personal safety.'
 
 function Badge({ level }: { level: Level }) {
   return <span className={'badge level-' + level}><i/> Level {level}</span>
@@ -95,7 +97,7 @@ function Home({ data, failed }: { data: Snapshot; failed: boolean }) {
     <section className="shell overview" aria-label="Advisory overview">
       <div className="stat"><Globe2 size={22}/><strong>{data.verifiedAt ? data.advisories.length : '—'}</strong><span>Destinations covered</span></div>
       {levels.map(n => <Link key={n} className={'stat stat-' + n} to={'/destinations?level=' + n}><span className="stat-label"><i/> Level {n}</span><strong>{data.verifiedAt ? data.advisories.filter(row => row.level === n).length : '—'}</strong><span>{labels[n - 1]}</span></Link>)}
-      <div className="stat updated"><Clock3 size={19}/><strong>{data.verifiedAt ? observedDate(data.verifiedAt) : 'Unavailable'}</strong><span>Last RSS verification</span></div>
+      <div className="stat updated"><Clock3 size={19}/><strong>{data.verifiedAt ? observedDate(data.verifiedAt) : 'Unavailable'}</strong><span>Last successful check · Scheduled daily</span></div>
     </section>
     <div className="shell"><Freshness data={data} failed={failed}/></div>
     <section className="shell home-section">
@@ -159,12 +161,12 @@ function Country({ data, loading }: { data: Snapshot; loading: boolean }) {
   const { slug } = useParams()
   const row = data.advisories.find(item => item.slug === slug)
   if (!row) return loading ? <p className="shell page" role="status">Loading destination…</p> : <Missing/>
-  const related = row.region ? data.advisories.filter(item => item.slug !== slug && item.region === row.region).slice(0, 3) : []
+  const related = relatedDestinations(row, data.advisories)
   return <article className="shell page country">
     <Link className="text-link" to="/destinations">← All destinations</Link>
     <div className="page-intro"><span className="country-flag" aria-hidden="true">{flag(row.iso2)}</span><h1>{row.name}</h1><p>{row.region && row.region + ' · '}U.S. travel advisory</p></div>
     <div className={'country-status level-' + row.level}><Badge level={row.level}/><h2>{levelText[row.level]}</h2><p>Official issue date {date(row.publishedAt)} · Feed verified {observedTime(row.verifiedAt)}</p><a href={row.url}>Read the official advisory <ArrowUpRight size={17}/></a></div>
-    <p className="notice"><TriangleAlert size={18}/> Travel advisory levels are not guarantees of personal safety. Check the official advisory before travel.</p>
+    <p className="notice"><TriangleAlert size={18}/> {travelGuidance}</p>
     <div className="country-body">
       {row.summary && <section><h2>Official advisory</h2>{row.summary.split('\n\n').map((line, i) => <p key={i}>{line}</p>)}</section>}
       <aside><h2>Safety and security</h2>
@@ -176,7 +178,7 @@ function Country({ data, loading }: { data: Snapshot; loading: boolean }) {
       </aside>
     </div>
     <section className="home-section"><h2>Advisory history</h2><Changes changes={data.changes.filter(change => change.slug === slug)} rows={[row]}/></section>
-    {related.length > 0 && <section><h2>Related destinations</h2><div className="destination-grid">{related.map(item => <DestinationCard key={item.slug} row={item}/>)}</div></section>}
+    {related.length > 0 && <section><h2>Nearby destinations</h2><div className="destination-grid">{related.map(item => <DestinationCard key={item.slug} row={item}/>)}</div></section>}
   </article>
 }
 
@@ -249,7 +251,7 @@ export function App({ initial = empty, live = true }: { initial?: Snapshot; live
       <Route path="/destinations/:slug" element={<Country data={data} loading={loading}/>}/>
       <Route path="/map" element={<section className="shell page"><div className="page-intro"><MapIcon size={26}/><h1>World advisory map</h1><p>Select a country to open its advisory. Zoom in to pan the map.</p></div><WorldMap advisories={data.advisories}/></section>}/>
       <Route path="/advisories" element={<section className="shell page"><div className="page-intro"><ArrowDownRight size={26}/><h1>Advisory changes</h1><p>Changes TripAware observed in the official feed, with government publication dates shown separately.</p></div><Changes changes={data.changes} rows={data.advisories}/><LevelGuide/></section>}/>
-      <Route path="/about" element={<section className="shell page"><div className="page-intro"><Compass size={26}/><h1>About TripAware</h1><p>Know Before You Go. A Blackburn Works Product.</p></div><div className="prose-card"><h2>Official sources</h2><p>TripAware is an independent public resource from <a href={blackburnWorksUrl}>Blackburn Works LLC</a>. We track travel advisories from the U.S. Department of State’s RSS feed. The agency’s website may have newer levels, additional warnings, or more detailed guidance.</p><ul><li><a href={sourceUrl}>U.S. Department of State travel advisories</a></li><li><a href="https://travel.state.gov/_res/rss/TAsTWs.xml">Official advisory RSS feed</a></li><li><a href="https://ivvcadatacatalog.state.gov/Datasets">Consular Affairs Data Catalog</a></li></ul><h2>How updates work</h2><p>TripAware records when it retrieves a valid feed and tracks changes to levels or advisory text. Publication dates come from the agency. Verification dates show when TripAware checked the feed. During an outage, the most recent available snapshot remains visible with its verification date.</p><h2>Travel planning</h2><p>Travel advisory levels are not guarantees of personal safety. Always review the latest State Department guidance, including regional warnings, before you travel.</p></div></section>}/>
+      <Route path="/about" element={<section className="shell page"><div className="page-intro"><Compass size={26}/><h1>About TripAware</h1><p>Know Before You Go. A Blackburn Works Product.</p></div><div className="prose-card"><h2>Official sources</h2><p>TripAware is an independent public resource from <a href={blackburnWorksUrl}>Blackburn Works LLC</a>. We track travel advisories from the U.S. Department of State’s RSS feed. The agency’s website may have newer levels, additional warnings, or more detailed guidance.</p><ul><li><a href={sourceUrl}>U.S. Department of State travel advisories</a></li><li><a href="https://travel.state.gov/_res/rss/TAsTWs.xml">Official advisory RSS feed</a></li><li><a href="https://ivvcadatacatalog.state.gov/Datasets">Consular Affairs Data Catalog</a></li></ul><h2>How updates work</h2><p>TripAware checks the U.S. State Department RSS feed once a day. The check is scheduled for 10:00 a.m. UTC and may start later within that hour. The official issue date shows when the State Department published an advisory. The last successful check shows when TripAware retrieved and verified the feed, even if the advisory text stayed the same. If a check fails, TripAware displays the last available snapshot and its verification date.</p><h2>Travel planning</h2><p>{travelGuidance} Check the official advisory for regional warnings before you travel.</p></div></section>}/>
       <Route path="*" element={<Missing/>}/>
     </Routes>
   </main><Footer/></>
